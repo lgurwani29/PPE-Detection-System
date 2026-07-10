@@ -157,8 +157,7 @@ model = load_model()
 
 with st.sidebar:
 
-    st.title("🦺 " /
-             "AI-Based PPE Detection")
+    st.title("🦺 AI-Based PPE Detection")
 
     st.markdown("---")
 
