@@ -94,6 +94,8 @@ h2,h3{
 
 }
 
+...
+
 /* File uploader */
 
 [data-testid="stFileUploader"]{
@@ -106,32 +108,63 @@ h2,h3{
 
 }
 
-/* Hide Streamlit footer */
- /* Sidebar Navigation */
+/* ========================= */
+/* SIDEBAR RADIO BUTTONS */
+/* ========================= */
 
-[data-testid="stSidebar"] label {
+[data-testid="stSidebar"] [role="radiogroup"] label{
 
-    font-size:18px !important;
+    font-size:20px !important;
 
     font-weight:600 !important;
 
-}
+    padding-top:12px !important;
 
-[data-testid="stSidebar"] .stRadio label {
+    padding-bottom:12px !important;
 
-    font-size:18px !important;
+    margin-bottom:8px !important;
 
-}
-
-/* Sidebar Title */
-
-[data-testid="stSidebar"] h1 {
-
-    font-size:30px !important;
-
-    font-weight:800 !important;
+    border-radius:10px;
 
 }
+
+[data-testid="stSidebar"] [role="radiogroup"] > div{
+
+    gap:10px;
+
+}
+
+[data-testid="stSidebar"] [role="radiogroup"] label:hover{
+
+    background:#1E293B;
+
+    border-radius:10px;
+
+    transition:0.2s;
+
+}
+
+[data-testid="stSidebar"] [aria-checked="true"]{
+
+    background:#2563EB;
+
+    border-radius:10px;
+
+    padding:8px;
+
+}
+
+/* Hide Streamlit footer */
+
+footer{
+
+    visibility:hidden;
+
+}
+
+</style>
+
+
 
 footer{
     visibility:hidden;
