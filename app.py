@@ -1,28 +1,30 @@
 import streamlit as st
 from ultralytics import YOLO
 from PIL import Image
-import tempfile
 import pandas as pd
 import cv2
+import tempfile
 import os
 
-# =====================================================
+# ==========================================================
 # PAGE CONFIGURATION
-# =====================================================
+# ==========================================================
 
 st.set_page_config(
-    page_title="PPE Detection System",
+    page_title="AI-Based PPE Detection System",
     page_icon="🦺",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# =====================================================
+# ==========================================================
 # CUSTOM CSS
-# =====================================================
+# ==========================================================
 
 st.markdown("""
 <style>
+
+/* Background */
 
 .stApp{
     background:#F4F8FB;
@@ -49,9 +51,9 @@ h2,h3{
     color:#1E3A8A;
 }
 
-/* Button */
+/* Buttons */
 
-.stButton>button{
+.stButton > button{
 
     width:100%;
 
@@ -59,22 +61,20 @@ h2,h3{
 
     color:white;
 
-    border-radius:10px;
-
     border:none;
 
-    padding:0.8rem;
+    border-radius:10px;
 
-    font-size:17px;
+    padding:12px;
 
     font-weight:bold;
+
+    transition:0.3s;
 }
 
-.stButton>button:hover{
+.stButton > button:hover{
 
     background:#1D4ED8;
-
-    color:white;
 
 }
 
@@ -88,13 +88,13 @@ h2,h3{
 
     padding:18px;
 
-    box-shadow:0 4px 18px rgba(0,0,0,.08);
+    box-shadow:0 4px 15px rgba(0,0,0,.08);
 
     border-left:6px solid #2563EB;
 
 }
 
-/* Upload Box */
+/* File uploader */
 
 [data-testid="stFileUploader"]{
 
@@ -106,20 +106,18 @@ h2,h3{
 
 }
 
-/* Footer */
+/* Hide Streamlit footer */
 
 footer{
-
     visibility:hidden;
-
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# =====================================================
+# ==========================================================
 # LOAD MODEL
-# =====================================================
+# ==========================================================
 
 @st.cache_resource
 def load_model():
@@ -128,9 +126,9 @@ def load_model():
 
 model = load_model()
 
-# =====================================================
+# ==========================================================
 # SIDEBAR
-# =====================================================
+# ==========================================================
 
 with st.sidebar:
 
@@ -138,814 +136,811 @@ with st.sidebar:
 
     st.markdown("---")
 
-    st.subheader("Project")
+    page = st.radio(
 
-    st.subheader("Project")
+        "Navigation",
 
-    st.write("""
-    AI-Based Personal Protective Equipment Detection System
+        [
 
-    B.Tech Final Year Project
-    """)
+            "🏠 Home",
 
-    st.markdown("---")
+            "📖 About Project",
 
-    st.subheader("Developer")
+            "🤖 Model Information",
 
-    st.write("""
-           
-  **Lavanya Guruwani**
+            "📚 How To Use",
 
-  B.Tech Computer Science & Engineering
-  """)
+            "🎯 Objectives",
 
-    st.markdown("---")
+            "⚠ Limitations",
 
-    st.subheader("Detected Classes")
+            "🚀 Future Scope",
 
-    st.write("""
-👤 Human
+            "👩‍💻 Developer"
 
-⛑ Helmet
-
-🦺 Safety Vest
-
-🧤 Gloves
-
-🥾 Boots
-""")
-
-    st.markdown("---")
-
-    st.subheader("Technology")
-
-    st.write("""
-• Python
-
-• YOLOv8
-
-• Streamlit
-
-• OpenCV
-
-• Pillow
-""")
-
-    st.markdown("---")
-
-    st.subheader("Model")
-
-    st.success("YOLOv8 Nano (Custom Trained)")
-
-    st.markdown("---")
-
-    st.info(
-"""
-Results may vary in crowded scenes,
-low lighting,
-or partially visible workers.
-"""
-    )
-
-# =====================================================
-# HEADER
-# =====================================================
-
-st.title("🦺 AI-Based Personal Protective Equipment Detection System")
-
-st.caption(
-    "Real-Time Industrial Safety Monitoring using Computer Vision"
-)
-
-st.markdown("---")
-
-left,right=st.columns([2,1])
-
-with left:
-
-    st.write(
-"""
-Upload an image of workers wearing Personal Protective Equipment.
-
-The model detects:
-
-- Human
-- Helmet
-- Safety Vest
-- Gloves
-- Boots
-"""
-    )
-
-with right:
-
-    confidence=st.slider(
-
-        "Confidence",
-
-        0.10,
-
-        1.00,
-
-        0.40,
-
-        0.05
-
-    )
-
-uploaded_file=st.file_uploader(
-
-    "Upload PPE Image",
-
-    type=["jpg","jpeg","png"]
-
-)
-
-detect=st.button("🚀 Detect PPE")
-# =====================================================
-# DETECTION
-# =====================================================
-
-if uploaded_file is not None and detect:
-
-    image = Image.open(uploaded_file).convert("RGB")
-
-    left_col, right_col = st.columns(2)
-
-    with left_col:
-
-        st.subheader("📷 Original Image")
-
-        st.image(
-            image,
-            use_container_width=True
-        )
-
-    with tempfile.NamedTemporaryFile(
-        delete=False,
-        suffix=".jpg"
-    ) as temp_file:
-
-        image.save(temp_file.name)
-
-        results = model.predict(
-            source=temp_file.name,
-            conf=confidence,
-            verbose=False
-        )
-
-    annotated_image = results[0].plot()
-
-    output_path = "annotated_result.jpg"
-
-    cv2.imwrite(
-        output_path,
-        cv2.cvtColor(
-            annotated_image,
-            cv2.COLOR_RGB2BGR
-        )
-    )
-
-    with right_col:
-
-        st.subheader("🤖 AI Detection")
-
-        st.image(
-            annotated_image,
-            use_container_width=True
-        )
-
-    st.download_button(
-
-        label="📥 Download Annotated Image",
-
-        data=open(output_path, "rb"),
-
-        file_name="PPE_Detection_Result.jpg",
-
-        mime="image/jpeg"
-
-    )
-
-    # =================================================
-    # COUNT DETECTIONS
-    # =================================================
-
-    detected = {}
-
-    class_names = model.names
-
-    for box in results[0].boxes:
-
-        class_id = int(box.cls[0])
-
-        class_name = class_names[class_id]
-
-        detected[class_name] = detected.get(
-            class_name,
-            0
-        ) + 1
-
-    humans = detected.get("human", 0)
-
-    helmets = detected.get("helmet", 0)
-
-    gloves = detected.get("gloves", 0)
-
-    boots = detected.get("boots", 0)
-
-    vests = detected.get("vest", 0)
-
-    st.markdown("---")
-
-    st.subheader("📊 Detection Dashboard")
-
-    c1, c2, c3, c4, c5 = st.columns(5)
-
-    with c1:
-
-        st.metric(
-            "👤 Humans",
-            humans
-        )
-
-    with c2:
-
-        st.metric(
-            "⛑ Helmets",
-            helmets
-        )
-
-    with c3:
-
-        st.metric(
-            "🦺 Vests",
-            vests
-        )
-
-    with c4:
-
-        st.metric(
-            "🧤 Gloves",
-            gloves
-        )
-
-    with c5:
-
-        st.metric(
-            "🥾 Boots",
-            boots
-        )
-    # =====================================================
-    # DETECTION SUMMARY
-    # =====================================================
-
-    st.markdown("---")
-
-    st.subheader("📋 Detection Summary")
-
-    summary_df = pd.DataFrame({
-
-        "Object":[
-            "Human",
-            "Helmet",
-            "Safety Vest",
-            "Gloves",
-            "Boots"
-        ],
-
-        "Count":[
-            humans,
-            helmets,
-            vests,
-            gloves,
-            boots
         ]
 
-    })
-
-    st.dataframe(
-        summary_df,
-        use_container_width=True,
-        hide_index=True
     )
 
-    # =====================================================
-    # PPE COMPLIANCE
-    # =====================================================
+# ==========================================================
+# HOME PAGE
+# ==========================================================
 
-    st.markdown("---")
+if page == "🏠 Home":
 
-    st.subheader("🦺 PPE Compliance Assessment")
+    st.title("🦺 AI-Based Personal Protective Equipment Detection System")
 
-    missing_items=[]
+    st.markdown(
+        """
+### Industrial Safety Monitoring using YOLOv8
 
-    if humans==0:
+Upload an image of workers wearing Personal Protective Equipment (PPE).
 
-        st.info(
-            "No workers were detected in the uploaded image."
-        )
-
-    else:
-
-        if helmets < humans:
-            missing_items.append("Helmet")
-
-        if vests < humans:
-            missing_items.append("Safety Vest")
-
-        if gloves < humans:
-            missing_items.append("Gloves")
-
-        if boots < humans:
-            missing_items.append("Safety Boots")
-
-        if len(missing_items)==0:
-
-            st.success(
-                "✅ All detected workers appear to be wearing the required PPE."
-            )
-
-        else:
-
-            st.warning(
-                "⚠ Possible Missing PPE"
-            )
-
-            for item in missing_items:
-
-                st.write(f"• {item}")
-
-    # =====================================================
-    # SAFETY SCORE
-    # =====================================================
-
-    st.markdown("---")
-
-    st.subheader("📈 Estimated Safety Score")
-
-    if humans>0:
-
-        required_items=humans*4
-
-        detected_items=(
-            helmets+
-            vests+
-            gloves+
-            boots
-        )
-
-        safety_score=min(
-            round(
-                (detected_items/required_items)*100
-            ),
-            100
-        )
-
-        st.progress(
-            safety_score/100
-        )
-
-        st.metric(
-            "Overall PPE Score",
-            f"{safety_score}%"
-        )
-
-        if safety_score>=90:
-
-            st.success(
-                "Excellent PPE compliance."
-            )
-
-        elif safety_score>=70:
-
-            st.info(
-                "Good compliance with minor deficiencies."
-            )
-
-        elif safety_score>=50:
-
-            st.warning(
-                "Moderate compliance. Some PPE appears to be missing."
-            )
-
-        else:
-
-            st.error(
-                "Low compliance. Multiple PPE items appear to be missing."
-            )
-
-    # =====================================================
-    # SAFETY RECOMMENDATION
-    # =====================================================
-
-    st.markdown("---")
-
-    st.subheader("📌 Safety Recommendation")
-
-    if humans==0:
-
-        st.info(
-            "Upload an image containing workers to begin analysis."
-        )
-
-    elif len(missing_items)==0:
-
-        st.success(
-            """
-Workers appear to be complying with PPE requirements.
-
-Continue routine safety inspections and maintain PPE standards.
-"""
-        )
-
-    else:
-
-        st.error(
-            """
-Potential PPE deficiencies were identified.
-
-Recommendation:
-
-• Verify helmet usage.
-
-• Ensure safety vests are worn.
-
-• Inspect gloves and safety boots.
-
-• Perform manual inspection before permitting work.
-"""
-        )
-    # =====================================================
-    # PROJECT INFORMATION
-    # =====================================================
-
-    st.markdown("---")
-
-    with st.expander("📘 About This Project", expanded=False):
-
-        st.markdown("""
-### Personal Protective Equipment Detection System
-
-This project has been developed to automate the detection of Personal Protective Equipment (PPE) using Computer Vision and Deep Learning.
-
-The application uses a custom-trained **YOLOv8 Nano** model to identify:
+The application automatically detects:
 
 - 👤 Human
 - ⛑ Helmet
 - 🦺 Safety Vest
 - 🧤 Gloves
 - 🥾 Boots
-
-The primary objective is to assist industries in improving workplace safety by providing automated PPE monitoring.
-""")
-
-    # =====================================================
-    # MODEL INFORMATION
-    # =====================================================
-
-    with st.expander("🤖 Model Information", expanded=False):
-
-        st.markdown(f"""
-### Detection Model
-
-**Architecture**
-
-YOLOv8 Nano
-
-**Framework**
-
-Ultralytics
-
-**Input Size**
-
-640 × 640 pixels
-
-**Confidence Threshold**
-
-{confidence:.2f}
-
-**Detected Classes**
-
-- Human
-- Helmet
-- Safety Vest
-- Gloves
-- Boots
-""")
-
-    # =====================================================
-    # HOW TO USE
-    # =====================================================
-
-    with st.expander("📖 How to Use", expanded=False):
-
-        st.markdown("""
-1. Upload an image.
-
-2. Adjust the confidence threshold if required.
-
-3. Click **Detect PPE**.
-
-4. Review the detection results.
-
-5. Download the annotated image.
-
-6. Analyse the PPE Compliance and Safety Score.
-""")
-
-    # =====================================================
-    # PROJECT OBJECTIVES
-    # =====================================================
-
-    with st.expander("🎯 Project Objectives", expanded=False):
-
-        st.markdown("""
-- Detect workers in industrial environments.
-
-- Detect Personal Protective Equipment.
-
-- Estimate PPE compliance.
-
-- Improve workplace safety monitoring.
-
-- Demonstrate real-time object detection using YOLOv8.
-""")
-
-    # =====================================================
-    # LIMITATIONS
-    # =====================================================
-
-    with st.expander("⚠ Limitations", expanded=False):
-
-        st.warning("""
-The system performs best on clear images.
-
-Detection accuracy may decrease in:
-
-- Crowded scenes
-
-- Low lighting
-
-- Motion blur
-
-- Occluded workers
-
-- Very small objects
-""")
-
-    # =====================================================
-    # FUTURE SCOPE
-    # =====================================================
-
-    with st.expander("🚀 Future Scope", expanded=False):
-
-        st.markdown("""
-Possible future improvements include:
-
-- Live webcam monitoring
-
-- CCTV integration
-
-- Worker tracking
-
-- Real-time alerts
-
-- Attendance integration
-
-- Safety violation logging
-
-- Cloud deployment
-
-- Email/SMS notification system
-""")
-    # =====================================================
-    # DETECTION STATISTICS
-    # =====================================================
-
-    st.markdown("---")
-
-    st.subheader("📈 Detection Statistics")
-
-    total_objects = humans + helmets + vests + gloves + boots
-
-    stat1, stat2, stat3 = st.columns(3)
-
-    with stat1:
-        st.info(f"**Total Objects Detected**\n\n{total_objects}")
-
-    with stat2:
-        if humans > 0:
-            st.success(f"**Workers Detected**\n\n{humans}")
-        else:
-            st.warning("**Workers Detected**\n\n0")
-
-    with stat3:
-        detected_classes = sum([
-            humans > 0,
-            helmets > 0,
-            vests > 0,
-            gloves > 0,
-            boots > 0
-        ])
-
-        st.info(f"**Classes Detected**\n\n{detected_classes}/5")
-
-    # =====================================================
-    # SYSTEM STATUS
-    # =====================================================
-
-    st.markdown("---")
-
-    st.subheader("🖥️ System Status")
-
-    status_col1, status_col2 = st.columns(2)
-
-    with status_col1:
-
-        st.success("🟢 Model Loaded Successfully")
-
-        st.write("YOLOv8 Nano is active and ready for inference.")
-
-    with status_col2:
-
-        st.success("🟢 Detection Completed")
-
-        st.write("Image processed successfully.")
-
-    # =====================================================
-    # PERFORMANCE SUMMARY
-    # =====================================================
-
-    st.markdown("---")
-
-    st.subheader("⚙️ Performance Summary")
-
-    performance_df = pd.DataFrame({
-        "Parameter": [
-            "Model",
-            "Framework",
-            "Input Size",
-            "Confidence Threshold",
-            "Detected Classes"
-        ],
-        "Value": [
-            "YOLOv8 Nano",
-            "Ultralytics",
-            "640 × 640",
-            f"{confidence:.2f}",
-            "5"
-        ]
-    })
-
-    st.table(performance_df)
-
-    # =====================================================
-    # FOOTER
-    # =====================================================
-
-    st.markdown("---")
-
-    st.markdown(
-        """
-<div style='text-align:center;
-padding:15px;
-background:white;
-border-radius:12px;
-box-shadow:0 4px 10px rgba(0,0,0,0.08);'>
-
-<h4 style='color:#1E3A8A; margin-bottom:8px;'>
-🦺 Personal Protective Equipment Detection System
-</h4>
-
-<p>
-Developed using <b>YOLOv8</b>, <b>Streamlit</b>, <b>OpenCV</b> and <b>Python</b>
-</p>
-
-<p style='color:gray;'>
-B.Tech Computer Science Engineering Project
-</p>
-
-</div>
-""",
-        unsafe_allow_html=True
+"""
     )
-    # =====================================================
-    # ICON LEGEND
-    # =====================================================
 
     st.markdown("---")
 
-    with st.expander("ℹ️ Detection Legend", expanded=False):
+    left,right = st.columns([2,1])
 
-        legend = pd.DataFrame({
+    with left:
 
-            "Icon":[
-                "👤",
-                "⛑",
-                "🦺",
-                "🧤",
-                "🥾"
+        uploaded_file = st.file_uploader(
+
+            "Upload Image",
+
+            type=["jpg","jpeg","png"]
+
+        )
+
+    with right:
+
+        confidence = st.slider(
+
+            "Confidence Threshold",
+
+            0.10,
+
+            1.00,
+
+            0.40,
+
+            0.05
+
+        )
+
+        detect = st.button(
+
+            "🔍 Analyze PPE Compliance"
+
+        )
+    # ==========================================================
+    # WAITING SCREEN
+    # ==========================================================
+
+    if uploaded_file is None:
+
+        st.info("👆 Upload an image to begin PPE detection.")
+
+    elif not detect:
+
+        image = Image.open(uploaded_file)
+
+        st.subheader("📷 Image Preview")
+
+        st.image(
+            image,
+            use_container_width=True
+        )
+
+        st.info(
+            "Click **🔍 Analyze PPE Compliance** to start detection."
+        )
+
+    else:
+
+        # ==========================================================
+        # LOAD IMAGE
+        # ==========================================================
+
+        image = Image.open(uploaded_file).convert("RGB")
+
+        with tempfile.NamedTemporaryFile(
+            delete=False,
+            suffix=".jpg"
+        ) as temp:
+
+            image.save(temp.name)
+
+            temp_path = temp.name
+
+        with st.spinner("Analyzing image..."):
+
+            results = model.predict(
+
+                source=temp_path,
+
+                conf=confidence,
+
+                verbose=False
+
+            )
+
+        annotated = results[0].plot()
+
+        output_path = "annotated_result.jpg"
+
+        cv2.imwrite(
+
+            output_path,
+
+            cv2.cvtColor(
+                annotated,
+                cv2.COLOR_RGB2BGR
+            )
+
+        )
+
+        left,right = st.columns(2)
+
+        with left:
+
+            st.subheader("📷 Original Image")
+
+            st.image(
+
+                image,
+
+                use_container_width=True
+
+            )
+
+        with right:
+
+            st.subheader("🤖 Detection Result")
+
+            st.image(
+
+                annotated,
+
+                use_container_width=True
+
+            )
+
+        with open(output_path,"rb") as file:
+
+            st.download_button(
+
+                "📥 Download Detection Result",
+
+                file,
+
+                file_name="PPE_Detection_Result.jpg",
+
+                mime="image/jpeg"
+
+            )
+
+        # ==========================================================
+        # COUNT OBJECTS
+        # ==========================================================
+
+        detected = {}
+
+        class_names = model.names
+
+        for box in results[0].boxes:
+
+            cls = int(box.cls[0])
+
+            label = class_names[cls]
+
+            detected[label] = detected.get(label,0)+1
+
+        humans = detected.get("human",0)
+
+        helmets = detected.get("helmet",0)
+
+        vests = detected.get("vest",0)
+
+        gloves = detected.get("gloves",0)
+
+        boots = detected.get("boots",0)
+        # ==========================================================
+        # DETECTION ANALYTICS DASHBOARD
+        # ==========================================================
+
+        st.markdown("---")
+
+        st.subheader("📊 Detection Analytics Dashboard")
+
+        c1, c2, c3, c4, c5 = st.columns(5)
+
+        c1.metric("👤 Humans", humans)
+        c2.metric("⛑ Helmets", helmets)
+        c3.metric("🦺 Vests", vests)
+        c4.metric("🧤 Gloves", gloves)
+        c5.metric("🥾 Boots", boots)
+
+        # ==========================================================
+        # DETECTION DETAILS
+        # ==========================================================
+
+        st.markdown("---")
+
+        st.subheader("📋 Detection Summary")
+
+        summary = pd.DataFrame({
+
+            "Detected Object":[
+
+                "Human",
+
+                "Helmet",
+
+                "Safety Vest",
+
+                "Gloves",
+
+                "Boots"
+
             ],
 
-            "Meaning":[
-                "Human",
-                "Helmet",
-                "Safety Vest",
-                "Gloves",
-                "Boots"
+            "Count":[
+
+                humans,
+
+                helmets,
+
+                vests,
+
+                gloves,
+
+                boots
+
             ]
 
         })
 
         st.dataframe(
-            legend,
+
+            summary,
+
             use_container_width=True,
+
             hide_index=True
+
         )
 
-    # =====================================================
-    # DISCLAIMER
-    # =====================================================
+        # ==========================================================
+        # PPE COMPLIANCE
+        # ==========================================================
+
+        st.markdown("---")
+
+        st.subheader("🦺 PPE Compliance Assessment")
+
+        missing=[]
+
+        if humans==0:
+
+            st.info(
+
+                "No workers detected."
+
+            )
+
+        else:
+
+            if helmets<humans:
+
+                missing.append("⛑ Helmet")
+
+            if vests<humans:
+
+                missing.append("🦺 Safety Vest")
+
+            if gloves<humans:
+
+                missing.append("🧤 Gloves")
+
+            if boots<humans:
+
+                missing.append("🥾 Safety Boots")
+
+            if len(missing)==0:
+
+                st.success(
+
+                    "✅ All detected workers appear to be equipped with the required PPE."
+
+                )
+
+            else:
+
+                st.warning(
+
+                    "⚠ Possible Missing PPE"
+
+                )
+
+                for item in missing:
+
+                    st.write(f"• {item}")
+
+        # ==========================================================
+        # SAFETY SCORE
+        # ==========================================================
+
+        st.markdown("---")
+
+        st.subheader("📈 Estimated Safety Score")
+
+        if humans>0:
+
+            total_required=humans*4
+
+            total_detected=(
+
+                helmets+
+
+                vests+
+
+                gloves+
+
+                boots
+
+            )
+
+            score=min(
+
+                round(
+
+                    (total_detected/total_required)*100
+
+                ),
+
+                100
+
+            )
+
+            st.progress(score/100)
+
+            st.metric(
+
+                "Overall PPE Score",
+
+                f"{score}%"
+
+            )
+            if score>=90:
+
+                st.success(
+
+                    "Excellent PPE compliance detected."
+
+                )
+
+            elif score>=70:
+
+                st.info(
+
+                    "Good compliance with minor PPE deficiencies."
+
+                )
+
+            elif score>=50:
+
+                st.warning(
+
+                    "Moderate compliance detected."
+
+                )
+
+            else:
+
+                st.error(
+
+                    "Poor PPE compliance detected."
+
+                )
+
+        # ==========================================================
+        # SAFETY RECOMMENDATION
+        # ==========================================================
+
+        st.markdown("---")
+
+        st.subheader("🚨 Safety Recommendation")
+
+        if humans==0:
+
+            st.info(
+
+                "Upload an image containing workers."
+
+            )
+
+        elif len(missing)==0:
+
+            st.success(
+
+                """
+All detected workers appear to be wearing the required PPE.
+
+No immediate safety concerns were identified.
+"""
+
+            )
+
+        else:
+
+            st.error(
+
+                """
+Potential PPE violations detected.
+
+Recommended Actions
+
+• Verify helmet usage
+
+• Check safety vest compliance
+
+• Ensure gloves are worn
+
+• Verify safety boots
+
+• Perform manual inspection if required
+"""
+
+            )
+# ==========================================================
+# ABOUT PROJECT PAGE
+# ==========================================================
+
+elif page == "📖 About Project":
+
+    st.title("📖 About Project")
+
+    st.markdown("""
+### AI-Based Personal Protective Equipment Detection System
+
+The AI-Based Personal Protective Equipment (PPE) Detection System is a computer vision application developed to improve workplace safety in industrial environments.
+
+Using a custom-trained YOLOv8 model, the system automatically detects workers and identifies whether essential PPE is present in an uploaded image.
+
+The application aims to reduce manual inspection efforts and demonstrate how Artificial Intelligence can assist in occupational safety monitoring.
+""")
 
     st.markdown("---")
 
-    st.info(
-        """
-This application is intended for educational and research purposes.
+    st.subheader("✨ Key Features")
 
-The compliance analysis is based on detected object counts and
-should not be considered a certified workplace safety assessment.
+    col1, col2 = st.columns(2)
 
-Actual industrial deployment would require additional validation,
-worker-level PPE association, CCTV integration and real-time tracking.
-"""
-    )
+    with col1:
 
-    # =====================================================
-    # CLEAN TEMP FILE
-    # =====================================================
+        st.success("✔ Human Detection")
 
-    try:
+        st.success("✔ Helmet Detection")
 
-        if os.path.exists(output_path):
-            os.remove(output_path)
+        st.success("✔ Safety Vest Detection")
 
-        if os.path.exists(temp_file.name):
-            os.remove(temp_file.name)
+    with col2:
 
-    except:
-        pass
+        st.success("✔ Gloves Detection")
 
-else:
+        st.success("✔ Safety Boots Detection")
+
+        st.success("✔ PPE Compliance Analysis")
 
     st.markdown("---")
 
-    st.info(
-        """
-### 👋 Welcome
+    st.subheader("🏭 Applications")
 
-Upload an image and press **🚀 Detect PPE**
-to begin the analysis.
+    st.write("""
 
-The system will automatically:
+• Construction Sites
 
-- Detect workers
-- Detect helmets
-- Detect gloves
-- Detect safety boots
-- Detect safety vests
-- Estimate PPE compliance
-- Generate a safety score
-- Allow downloading the annotated result
-"""
+• Manufacturing Industries
+
+• Mining Operations
+
+• Warehouses
+
+• Oil & Gas Industries
+
+• Smart Industrial Surveillance
+
+""")
+
+# ==========================================================
+# MODEL INFORMATION
+# ==========================================================
+
+elif page == "🤖 Model Information":
+
+    st.title("🤖 Model Information")
+
+    st.markdown("### Detection Model")
+
+    info1, info2 = st.columns(2)
+
+    with info1:
+
+        st.metric("Model", "YOLOv8 Nano")
+
+        st.metric("Framework", "Ultralytics")
+
+        st.metric("Programming", "Python")
+
+    with info2:
+
+        st.metric("Training Images", "4401")
+
+        st.metric("Detected Classes", "5")
+
+        st.metric("Confidence", f"{confidence:.2f}")
+
+    st.markdown("---")
+
+    st.subheader("Detected Classes")
+
+    table = pd.DataFrame({
+
+        "Class":[
+
+            "Human",
+
+            "Helmet",
+
+            "Safety Vest",
+
+            "Gloves",
+
+            "Boots"
+
+        ],
+
+        "Purpose":[
+
+            "Worker Detection",
+
+            "Head Protection",
+
+            "Body Protection",
+
+            "Hand Protection",
+
+            "Foot Protection"
+
+        ]
+
+    })
+
+    st.dataframe(
+
+        table,
+
+        use_container_width=True,
+
+        hide_index=True
+
     )
+# ==========================================================
+# HOW TO USE
+# ==========================================================
 
-    st.image(
-        "res.jpg",
-        use_container_width=True
-    )
+elif page == "📚 How To Use":
 
-# =====================================================
+    st.title("📚 How To Use")
+
+    st.markdown("""
+Follow these simple steps to analyze PPE compliance:
+
+### Step 1
+Upload an image containing workers.
+
+### Step 2
+Navigate to the **Home** page.
+
+### Step 3
+Adjust the confidence threshold if required.
+
+### Step 4
+Click **🔍 Analyze PPE Compliance**.
+
+### Step 5
+Review the detection dashboard.
+
+### Step 6
+Download the annotated image if required.
+""")
+
+    st.success("💡 Tip: Images with good lighting and a clear view of workers provide the best results.")
+
+# ==========================================================
+# OBJECTIVES
+# ==========================================================
+
+elif page == "🎯 Objectives":
+
+    st.title("🎯 Project Objectives")
+
+    st.markdown("""
+### Primary Objectives
+
+- Detect workers automatically.
+- Detect essential Personal Protective Equipment.
+- Improve workplace safety monitoring.
+- Reduce manual inspection efforts.
+- Demonstrate practical Computer Vision using YOLOv8.
+
+---
+
+### Expected Outcome
+
+The system provides a quick estimate of PPE compliance from uploaded images and demonstrates how AI can assist industrial safety inspection.
+""")
+
+# ==========================================================
+# LIMITATIONS
+# ==========================================================
+
+elif page == "⚠ Limitations":
+
+    st.title("⚠ Limitations")
+
+    st.warning("""
+Like every Computer Vision model, this application has certain limitations.
+""")
+
+    st.markdown("""
+### Detection accuracy may decrease when:
+
+- Workers are partially hidden.
+- Lighting conditions are poor.
+- Images are blurry.
+- Objects are very small.
+- Workers overlap each other.
+- PPE is heavily occluded.
+
+---
+
+### Important Note
+
+The PPE Compliance score is an estimate based on detected object counts. It does not associate individual PPE items with specific workers.
+""")
+
+# ==========================================================
+# FUTURE SCOPE
+# ==========================================================
+
+elif page == "🚀 Future Scope":
+
+    st.title("🚀 Future Scope")
+
+    st.markdown("""
+### Possible Enhancements
+
+- 🎥 Live webcam detection
+- 📹 CCTV integration
+- 📱 Mobile application
+- ☁ Cloud deployment
+- 🔔 Real-time alert generation
+- 👷 Worker tracking
+- 🧠 Individual worker PPE association
+- 📊 Safety violation reports
+- 📈 Analytics dashboard
+- 🌍 Smart industrial monitoring
+""")
+
+# ==========================================================
+# DEVELOPER
+# ==========================================================
+
+elif page == "👩‍💻 Developer":
+
+    st.title("👩‍💻 Developer")
+
+    left, right = st.columns([1,2])
+
+    with left:
+
+        st.markdown("# 👩‍💻")
+
+    with right:
+
+        st.markdown("""
+## Lavanya Guruwani
+
+**B.Tech Computer Science & Engineering**
+
+Final Year Project
+
+AI-Based Personal Protective Equipment Detection System
+
+---
+
+### Technologies Used
+
+- Python
+- YOLOv8
+- Streamlit
+- OpenCV
+- Pandas
+- Pillow
+
+---
+
+Thank you for exploring this project.
+""")
+# ==========================================================
 # FINAL FOOTER
-# =====================================================
+# ==========================================================
 
 st.markdown("---")
 
 st.markdown(
-"""
-<div style="text-align:center;
-padding:25px;
-font-size:15px;
-color:gray;">
+    """
+<div style="
+background:#FFFFFF;
+padding:18px;
+border-radius:12px;
+box-shadow:0 3px 10px rgba(0,0,0,0.08);
+text-align:center;
+">
 
-<b>Personal Protective Equipment Detection System</b><br><br>
+<h4 style="color:#1E3A8A;">
+🦺 AI-Based Personal Protective Equipment Detection System
+</h4>
 
-Developed using Python, Streamlit, OpenCV and YOLOv8.<br><br>
+<p>
+Developed using
+<b>YOLOv8</b>,
+<b>Python</b>,
+<b>OpenCV</b>,
+<b>Streamlit</b>
+and
+<b>Pandas</b>.
+</p>
 
-© 2026 PPE Detection Project
+<p style="color:gray;">
+
+Version 1.0
+
+</p>
 
 </div>
 """,
 unsafe_allow_html=True
 )
+
+# ==========================================================
+# CLEAN TEMPORARY FILES
+# ==========================================================
+
+try:
+
+    if "output_path" in locals():
+
+        if os.path.exists(output_path):
+
+            os.remove(output_path)
+
+    if "temp_path" in locals():
+
+        if os.path.exists(temp_path):
+
+            os.remove(temp_path)
+
+except:
+
+    pass
