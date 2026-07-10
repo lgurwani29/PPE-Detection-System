@@ -107,6 +107,31 @@ h2,h3{
 }
 
 /* Hide Streamlit footer */
+ /* Sidebar Navigation */
+
+[data-testid="stSidebar"] label {
+
+    font-size:18px !important;
+
+    font-weight:600 !important;
+
+}
+
+[data-testid="stSidebar"] .stRadio label {
+
+    font-size:18px !important;
+
+}
+
+/* Sidebar Title */
+
+[data-testid="stSidebar"] h1 {
+
+    font-size:30px !important;
+
+    font-weight:800 !important;
+
+}
 
 footer{
     visibility:hidden;
@@ -132,13 +157,14 @@ model = load_model()
 
 with st.sidebar:
 
-    st.title("🦺 PPE Dashboard")
+    st.title("🦺 " /
+             "AI-Based PPE Detection")
 
     st.markdown("---")
 
     page = st.radio(
 
-        "Navigation",
+        "",
 
         [
 
@@ -156,7 +182,7 @@ with st.sidebar:
 
             "🚀 Future Scope",
 
-            "👩‍💻 Developer"
+            "👩‍💻 About Developer"
 
         ]
 
@@ -846,9 +872,9 @@ elif page == "🚀 Future Scope":
 # DEVELOPER
 # ==========================================================
 
-elif page == "👩‍💻 Developer":
+elif page == "👩‍💻 About Developer":
 
-    st.title("👩‍💻 Developer")
+    st.title("👩‍💻 About Developer")
 
     left, right = st.columns([1,2])
 
